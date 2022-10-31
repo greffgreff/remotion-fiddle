@@ -3,6 +3,10 @@
 // ! The configuration file does only apply if you render via the CLI !
 
 import {Config} from 'remotion';
+import {enableSkia} from '@remotion/skia/enable';
 
+Config.Bundling.overrideWebpackConfig((currentConfiguration) => {
+	return enableSkia(currentConfiguration);
+});
 Config.Rendering.setImageFormat('jpeg');
 Config.Output.setOverwriteOutput(true);
