@@ -17,20 +17,14 @@ export const Video: React.FC<{}> = () => {
 
 	return (
 		<AbsoluteFill>
-			<div id="clipping" style={{...logoStyle, opacity: fadeOut}}>
-				Peacefully
-			</div>
-			<Img
-				id="background"
-				style={{...image, filter: `blur(${blur}px)`}}
-				src={background}
-			/>
+			<div style={{...logo, opacity: fadeOut}}>Peacefully</div>
+			<Img style={{...image, filter: `blur(${blur}px)`}} src={background} />
 			<Audio src={song} />
 		</AbsoluteFill>
 	);
 };
 
-const logoStyle: CSSProperties = {
+const logo: CSSProperties = {
 	position: 'absolute',
 	top: '50%',
 	left: '50%',
