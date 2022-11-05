@@ -12,7 +12,7 @@ import {LoadSkia} from '@shopify/react-native-skia/src/web';
 			<Composition
 				id="video"
 				component={Video}
-				durationInFrames={1000}
+				durationInFrames={300}
 				fps={60}
 				width={1920}
 				height={1080}

@@ -7,19 +7,22 @@ import {
 	interpolate,
 	staticFile,
 	useVideoConfig,
+	Easing,
 } from 'remotion';
 import {Paint, Mask, Path, Skia} from '@shopify/react-native-skia';
 import {SkiaCanvas} from '@remotion/skia';
 import Vibrant from 'node-vibrant';
 import {SvgPaths} from './assets';
+import {colord} from 'colord';
 
 const CLAMP = {
+	easing: Easing.bezier(0.49, 0.19, 0.43, 0.84),
 	extrapolateLeft: 'clamp',
 	extrapolateRight: 'clamp',
 } as const;
 
 export const Video: React.FC<{}> = () => {
-	const background = staticFile('bg2.jpg');
+	const background = staticFile('bg8.jpg');
 	const audio = staticFile('audio.mp3');
 
 	const {height, width} = useVideoConfig();
@@ -28,12 +31,12 @@ export const Video: React.FC<{}> = () => {
 	const paths = SvgPaths.defaultPaths.map((p) =>
 		Skia.Path.MakeFromSVGString(p)
 	);
-	const outerClipPaths = SvgPaths.defaultClipPaths.map((p) =>
+	const clipPaths = SvgPaths.defaultClipPaths.map((p) =>
 		Skia.Path.MakeFromSVGString(p)
 	);
 
-	const progress = interpolate(frame, [0, 200], [0, 1], CLAMP);
-	const stroke = interpolate(frame, [0, 50], [0, 30], CLAMP);
+	const progress = interpolate(frame, [0, 240], [0, 2.5], CLAMP);
+	const stroke = interpolate(frame, [0, 100], [0, 30], CLAMP);
 
 	const [palette, setPalette] = useState<string[]>();
 
@@ -41,10 +44,18 @@ export const Video: React.FC<{}> = () => {
 		Vibrant.from(background)
 			.getPalette()
 			.then((palette) => {
-				const parsedPalette = Object.keys(palette).map((c) =>
+				const rgbPalette = Object.keys(palette).map((c) =>
 					// @ts-ignore
 					palette[c].rgb.toString()
 				);
+				const parsedPalette = rgbPalette
+					.sort(
+						(rgb1, rgb2) =>
+							colord(`rgb(${rgb2})`).brightness() -
+							colord(`rgb(${rgb1})`).brightness()
+					)
+					.reverse();
+				parsedPalette.push('255,255,255');
 				setPalette(parsedPalette);
 			});
 	}, []);
@@ -53,23 +64,23 @@ export const Video: React.FC<{}> = () => {
 		<AbsoluteFill>
 			<SkiaCanvas height={height} width={width}>
 				<>
-					{palette?.map((color) => (
+					{palette?.map((color, c) => (
 						<>
 							<Mask
-								children={outerClipPaths.map((path, i) => (
+								children={clipPaths.map((path) => (
 									<Path
-										id={i}
+										id={c}
 										// @ts-ignore
 										path={path}
-										color={'white'}
+										color={`rgb(${color})`}
 									/>
 								))}
-								mask={paths.map((path, i) => (
+								mask={paths.map((path, p) => (
 									<Path
-										id={i}
+										id={p}
 										// @ts-ignore
 										path={path}
-										end={progress}
+										end={progress - 0.1 * (c + p)}
 										color={'transparent'}
 									>
 										<Paint
@@ -109,6 +120,9 @@ const logoStyle: CSSProperties = {
 
 const image: CSSProperties = {
 	position: 'absolute',
+	// top: '50%',
+	// left: '50%',
+	// transform: 'translate(-50%, -50%)',
 	objectFit: 'cover',
 	height: '100%',
 	zIndex: -99,
