@@ -9,16 +9,16 @@ import {
 	useVideoConfig,
 	Easing,
 } from 'remotion';
-import {Paint, Mask, Path, Skia, Fill, Group} from '@shopify/react-native-skia';
+import {Paint, Mask, Path, Skia} from '@shopify/react-native-skia';
 import {SkiaCanvas} from '@remotion/skia';
 import Vibrant from 'node-vibrant';
 import {SvgPaths} from './assets';
 import {colord} from 'colord';
 
 export const Video: React.FC<{}> = () => {
-	const background = staticFile('bg8.jpg');
+	const background = staticFile('bg14.jpg');
 	const audio = staticFile('audio.mp3');
-	const {height, width} = useVideoConfig();
+	const {height, width, fps} = useVideoConfig();
 	const frame = useCurrentFrame();
 	const [palette, setPalette] = useState<string[]>();
 
@@ -33,8 +33,33 @@ export const Video: React.FC<{}> = () => {
 		extrapolateLeft: 'clamp',
 		extrapolateRight: 'clamp',
 	} as const;
-	const progressStart = interpolate(frame, [0, 240, 450], [0, 2.5, 0], clamp);
-	const stroke = interpolate(frame, [0, 100, 350, 450], [0, 30, 30, 0], clamp);
+
+	const startAnimation = 3;
+	const logoDuration = 3;
+	const endAnimation = 2;
+
+	const animationProgress = interpolate(
+		frame,
+		[
+			0,
+			fps * startAnimation,
+			fps * (startAnimation + logoDuration),
+			fps * (startAnimation + logoDuration + endAnimation),
+		],
+		[0, 2.5, 2.5, 0],
+		clamp
+	);
+	const strokeProgress = interpolate(
+		frame,
+		[
+			0,
+			fps * startAnimation - 100,
+			fps * (startAnimation + logoDuration) + 50,
+			fps * (startAnimation + logoDuration + endAnimation),
+		],
+		[0, 30, 30, 0],
+		clamp
+	);
 
 	useEffect(() => {
 		Vibrant.from(background)
@@ -75,12 +100,12 @@ export const Video: React.FC<{}> = () => {
 									id={p}
 									// @ts-ignore
 									path={path}
-									end={progressStart - 0.1 * (c + p)}
+									end={animationProgress - 0.1 * (c + p)}
 									color={'transparent'}
 								>
 									<Paint
 										style={'stroke'}
-										strokeWidth={stroke}
+										strokeWidth={strokeProgress}
 										strokeCap={'round'}
 										strokeJoin={'round'}
 										color={'white'}
